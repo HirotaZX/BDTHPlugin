@@ -55,8 +55,8 @@ namespace BDTHPlugin.Interface.Components
       if (ImGui.IsItemHovered())
       {
         ImGui.BeginTooltip();
-        ImGui.Text("Click and drag each to move the selected item.");
-        ImGui.Text("Change the drag option below to influence how much it moves as you drag.");
+        ImGui.Text("点击并拖拽来移动家具");
+        ImGui.Text("调整下方网格大小来控制拖拽距离");
         ImGui.EndTooltip();
       }
 
@@ -69,7 +69,7 @@ namespace BDTHPlugin.Interface.Components
           copyRotation = Memory.rotation.Y;
         }
         if (ImGui.IsItemHovered())
-          ImGui.SetTooltip("Copy Position & Rotation");
+          ImGui.SetTooltip("复制坐标和面向");
 
         ImGui.BeginDisabled(copyPosition == null || copyRotation == null);
         {
@@ -79,7 +79,7 @@ namespace BDTHPlugin.Interface.Components
             Memory.WriteRotation(Memory.rotation with { Y = copyRotation.Value });
           }
           if (ImGui.IsItemHovered())
-            ImGui.SetTooltip("Paste Position & Rotation");
+            ImGui.SetTooltip("粘贴坐标和面向");
         }
         ImGui.EndDisabled();
       }
