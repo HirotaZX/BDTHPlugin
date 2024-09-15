@@ -43,10 +43,10 @@ namespace BDTHPlugin.Interface.Components
           DrawDragCoord("##bdth-xdrag", ref Memory.position.X);
           DrawDragCoord("##bdth-ydrag", ref Memory.position.Y);
           DrawDragCoord("##bdth-zdrag", ref Memory.position.Z);
-          ImGui.Text("position");
+          ImGui.Text("坐标");
 
           DrawDragRotate("##bdth-rydrag", ref Memory.rotation.Y);
-          ImGui.Text("rotation");
+          ImGui.Text("角度");
         }
         ImGui.PopItemWidth();
       }
@@ -55,8 +55,8 @@ namespace BDTHPlugin.Interface.Components
       if (ImGui.IsItemHovered())
       {
         ImGui.BeginTooltip();
-        ImGui.Text("点击并拖拽来移动家具");
-        ImGui.Text("调整下方网格大小来控制拖拽距离");
+        ImGui.Text("点击并拖动来移动家具");
+        ImGui.Text("调整下方网格大小来控制拖动距离");
         ImGui.EndTooltip();
       }
 
@@ -69,7 +69,7 @@ namespace BDTHPlugin.Interface.Components
           copyRotation = Memory.rotation.Y;
         }
         if (ImGui.IsItemHovered())
-          ImGui.SetTooltip("复制坐标和面向");
+          ImGui.SetTooltip("复制坐标和角度");
 
         ImGui.BeginDisabled(copyPosition == null || copyRotation == null);
         {
@@ -79,17 +79,17 @@ namespace BDTHPlugin.Interface.Components
             Memory.WriteRotation(Memory.rotation with { Y = copyRotation.Value });
           }
           if (ImGui.IsItemHovered())
-            ImGui.SetTooltip("粘贴坐标和面向");
+            ImGui.SetTooltip("粘贴坐标和角度");
         }
         ImGui.EndDisabled();
       }
 
       ImGui.EndGroup();
 
-      DrawInputCoord("x coord##bdth-x", ref Memory.position.X, ref lockX);
-      DrawInputCoord("y coord##bdth-y", ref Memory.position.Y, ref lockY);
-      DrawInputCoord("z coord##bdth-z", ref Memory.position.Z, ref lockZ);
-      DrawInputRotate("ry degree##bdth-ry", ref Memory.rotation.Y);
+      DrawInputCoord("X轴##bdth-x", ref Memory.position.X, ref lockX);
+      DrawInputCoord("Y轴##bdth-y", ref Memory.position.Y, ref lockY);
+      DrawInputCoord("Z轴##bdth-z", ref Memory.position.Z, ref lockZ);
+      DrawInputRotate("旋转角度##bdth-ry", ref Memory.rotation.Y);
     }
     
     private void HandleScrollInput(ref float f)

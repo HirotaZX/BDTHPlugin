@@ -116,7 +116,7 @@ namespace BDTHPlugin.Interface.Windows
       var dummyHousingGoods = PluginMemory.HousingGoods != null && PluginMemory.HousingGoods->IsVisible;
       var dummyInventory = Memory.InventoryVisible;
 
-      if (ImGui.Checkbox("显示家具界面", ref dummyHousingGoods))
+      if (ImGui.Checkbox("显示家具设置", ref dummyHousingGoods))
         if (PluginMemory.HousingGoods != null)
           PluginMemory.HousingGoods->IsVisible = dummyHousingGoods;
       ImGui.SameLine();
