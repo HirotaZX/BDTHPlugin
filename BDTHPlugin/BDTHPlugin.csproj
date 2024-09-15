@@ -49,6 +49,7 @@
 
   <ItemGroup>
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
+    <PackageReference Include="DalamudPackager" Version="2.1.12" />
   </ItemGroup>
 
   <ItemGroup>
