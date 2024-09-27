@@ -8,18 +8,21 @@ using System.Runtime.InteropServices;
 using FFXIVClientStructs.FFXIV.Client.Graphics.Scene;
 using CameraManager = FFXIVClientStructs.FFXIV.Client.Game.Control.CameraManager;
 
+using Dalamud.Utility.Signatures;
+
 namespace BDTHPlugin
 {
   public class PluginMemory
   {
+    private bool isHousingOpen = false;
     private int inventoryType = 0;
 
     // Pointers to modify assembly to enable place anywhere.
     public IntPtr placeAnywhere;
     public IntPtr wallAnywhere;
     public IntPtr wallmountAnywhere;
-    public IntPtr showcaseAnywhereRotate;
-    public IntPtr showcaseAnywherePlace;
+    // public IntPtr showcaseAnywhereRotate;
+    // public IntPtr showcaseAnywherePlace;
 
     // Layout and housing module pointers.
     private readonly IntPtr layoutWorldPtr;
@@ -27,8 +30,8 @@ namespace BDTHPlugin
 
     public unsafe LayoutWorld* Layout => (LayoutWorld*)layoutWorldPtr;
     public unsafe HousingStructure* HousingStructure => Layout->HousingStruct;
-    public unsafe HousingModule* HousingModule => (HousingModule*)housingModulePtr;
-    public unsafe HousingObjectManger* CurrentManager => HousingModule->GetCurrentManager();
+    public unsafe HousingModule* HousingModule => housingModulePtr != IntPtr.Zero ? (HousingModule*)Marshal.ReadIntPtr(housingModulePtr) : null;
+    public unsafe HousingObjectManager* CurrentManager => HousingModule->GetCurrentManager();
     public unsafe Camera* Camera => &CameraManager.Instance()->GetActiveCamera()->CameraBase.SceneCamera;
 
     public static unsafe AtkUnitBase* HousingLayout => (AtkUnitBase*)Plugin.GameGui.GetAddonByName("HousingLayout", 1);
@@ -65,76 +68,46 @@ namespace BDTHPlugin
       {
         if (HousingGoods == null || InventoryExpansion == null || InventoryLarge == null || Inventory == null)
           return;
+
+        // Determine which inventory is open assuming it's visible
+        if (InventoryExpansion->IsVisible || InventoryLarge->IsVisible || Inventory->IsVisible)
+        {
+          if (InventoryExpansion->IsVisible) inventoryType = 1;
+          else if (InventoryLarge->IsVisible) inventoryType = 2;
+          else if (Inventory->IsVisible) inventoryType = 3;
+        }
+
         try
         {
-          if (value)
+          switch (inventoryType)
           {
-            switch (inventoryType)
-            {
-              case 1:
-                InventoryExpansion->IsVisible = true;
-                InventoryGrid0E->IsVisible = true;
-                InventoryGrid1E->IsVisible = true;
-                InventoryGrid2E->IsVisible = true;
-                InventoryGrid3E->IsVisible = true;
-                InventoryEventGrid0E->IsVisible = true;
-                InventoryEventGrid1E->IsVisible = true;
-                InventoryEventGrid2E->IsVisible = true;
-                InventoryCrystalGrid2->IsVisible = true;
-                break;
-              case 2:
-                InventoryLarge->IsVisible = true;
-                InventoryGrid0->IsVisible = true;
-                InventoryGrid1->IsVisible = true;
-                InventoryEventGrid0->IsVisible = true;
-                InventoryEventGrid1->IsVisible = true;
-                InventoryEventGrid2->IsVisible = true;
-                InventoryCrystalGrid->IsVisible = true;
-                break;
-              case 3:
-                Inventory->IsVisible = true;
-                InventoryGrid->IsVisible = true;
-                InventoryGridCrystal->IsVisible = true;
-                break;
-              default:
-                break;
-            }
-          }
-          else
-          {
-            if (InventoryExpansion->Flags == 52)
-            {
-              inventoryType = 1;
-              InventoryExpansion->IsVisible = false;
-              InventoryGrid0E->IsVisible = false;
-              InventoryGrid1E->IsVisible = false;
-              InventoryGrid2E->IsVisible = false;
-              InventoryGrid3E->IsVisible = false;
-              InventoryEventGrid0E->IsVisible = false;
-              InventoryEventGrid1E->IsVisible = false;
-              InventoryEventGrid2E->IsVisible = false;
-              InventoryCrystalGrid2->IsVisible = false;
-            }
-
-            if (InventoryLarge->Flags == 52)
-            {
-              inventoryType = 2;
-              InventoryLarge->IsVisible = false;
-              InventoryGrid0->IsVisible = false;
-              InventoryGrid1->IsVisible = false;
-              InventoryEventGrid0->IsVisible = false;
-              InventoryEventGrid1->IsVisible = false;
-              InventoryEventGrid2->IsVisible = false;
-              InventoryCrystalGrid->IsVisible = false;
-            }
-
-            if (Inventory->Flags == 52)
-            {
-              inventoryType = 3;
-              Inventory->IsVisible = false;
-              InventoryGrid->IsVisible = false;
-              InventoryGridCrystal->IsVisible = false;
-            }
+            case 1:
+              InventoryExpansion->IsVisible = value;
+              InventoryGrid0E->IsVisible = value;
+              InventoryGrid1E->IsVisible = value;
+              InventoryGrid2E->IsVisible = value;
+              InventoryGrid3E->IsVisible = value;
+              InventoryEventGrid0E->IsVisible = value;
+              InventoryEventGrid1E->IsVisible = value;
+              InventoryEventGrid2E->IsVisible = value;
+              InventoryCrystalGrid2->IsVisible = value;
+              break;
+            case 2:
+              InventoryLarge->IsVisible = value;
+              InventoryGrid0->IsVisible = value;
+              InventoryGrid1->IsVisible = value;
+              InventoryEventGrid0->IsVisible = value;
+              InventoryEventGrid1->IsVisible = value;
+              InventoryEventGrid2->IsVisible = value;
+              InventoryCrystalGrid->IsVisible = value;
+              break;
+            case 3:
+              Inventory->IsVisible = value;
+              InventoryGrid->IsVisible = value;
+              InventoryGridCrystal->IsVisible = value;
+              break;
+            default:
+              break;
           }
         }
         catch
@@ -152,39 +125,38 @@ namespace BDTHPlugin
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void SelectItemDelegate(IntPtr housingStruct, IntPtr item);
     private readonly IntPtr selectItemAddress;
-    public SelectItemDelegate SelectItem;
+    public SelectItemDelegate SelectItem = null!;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void PlaceHousingItemDelegate(IntPtr item, Vector3 position);
     private readonly IntPtr placeHousingItemAddress;
-    public PlaceHousingItemDelegate PlaceHousingItem;
+    public PlaceHousingItemDelegate PlaceHousingItem = null!;
 
     [UnmanagedFunctionPointer(CallingConvention.Cdecl)]
     public delegate void HousingLayoutModelUpdateDelegate(IntPtr item);
     private readonly IntPtr housingLayoutModelUpdateAddress;
-    public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate;
+    public HousingLayoutModelUpdateDelegate HousingLayoutModelUpdate = null!;
 
     public PluginMemory()
     {
       try
       {
         // Assembly address for asm rewrites.
-        placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 87 ?? ?? 00 00 ?? 4C 8B B0") + 6;
+        placeAnywhere = Plugin.TargetModuleScanner.ScanText("C6 ?? ?? ?? 00 00 00 8B FE 48 89") + 6;
         wallAnywhere = Plugin.TargetModuleScanner.ScanText("48 85 C0 74 ?? C6 87 ?? ?? 00 00 00") + 11;
-        wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("C0 E8 ?? 24 ?? 74 ?? C6 87 ?? ?? 00 00 00") + 13;
-        showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("84 C0 75 ?? 88 87 ?? ?? 00 00 48 8B 9C") + 4;
-        showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("84 C0 75 ?? 88 87 ?? ?? 00 00 48 83") + 4;
+        wallmountAnywhere = Plugin.TargetModuleScanner.ScanText("c6 87 83 01 00 00 00 48 83 c4 ??") + 6;
+        // showcaseAnywhereRotate = Plugin.TargetModuleScanner.ScanText("88 87 98 02 00 00 48 8b 9c ?? ?? 00 00 00 4C 8B");
+        // showcaseAnywherePlace = Plugin.TargetModuleScanner.ScanText("88 87 98 02 00 00 48 8B");
 
         // Pointers for housing structures.
-        layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 0D ?? ?? ?? ?? 48 85 C9 74 ?? 48 8B 49 40 E9 ?? ?? ?? ??");
-        housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("40 53 48 83 EC 20 33 DB 48 39 1D ?? ?? ?? ?? 75 2C 45 33 C0 33 D2 B9 ?? ?? ?? ?? E8 ?? ?? ?? ?? 48 85 C0 74 11 48 8B C8 E8 ?? ?? ?? ?? 48 89 05 ?? ?? ?? ?? EB 07");
+        layoutWorldPtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B D1 48 8B 0D ?? ?? ?? ?? 48 85 C9 74 0A", 3);
+        housingModulePtr = Plugin.TargetModuleScanner.GetStaticAddressFromSig("48 8B 05 ?? ?? ?? ?? 8B 52");
 
         // Read the pointers.
         layoutWorldPtr = Marshal.ReadIntPtr(layoutWorldPtr);
-        housingModulePtr = Marshal.ReadIntPtr(housingModulePtr);
 
         // Select housing item.
-        selectItemAddress = Plugin.TargetModuleScanner.ScanText("E8 ?? ?? ?? ?? 48 8B CE E8 ?? ?? ?? ?? 48 8B 6C 24 40 48 8B CE");
+        selectItemAddress = Plugin.TargetModuleScanner.ScanText("48 85 D2 0F 84 49 09 00 00 53 41 56 48 83 EC 48 48 89 6C 24 60 48 8B DA 48 89 74 24 70 4C 8B F1");
         SelectItem = Marshal.GetDelegateForFunctionPointer<SelectItemDelegate>(selectItemAddress);
 
         // Address for the place item function.
@@ -192,19 +164,27 @@ namespace BDTHPlugin
         PlaceHousingItem = Marshal.GetDelegateForFunctionPointer<PlaceHousingItemDelegate>(placeHousingItemAddress);
 
         // Housing item model update.
-        housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.ScanText("48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 50 48 8B E9 48 8B 49 ??");
+        housingLayoutModelUpdateAddress = Plugin.TargetModuleScanner.ScanText("48 89 6C 24 ?? 48 89 74 24 ?? 48 89 7C 24 ?? 41 56 48 83 EC 50 48 8B E9 48 8B 49");
         HousingLayoutModelUpdate = Marshal.GetDelegateForFunctionPointer<HousingLayoutModelUpdateDelegate>(housingLayoutModelUpdateAddress);
 
-        if (Plugin.GetConfiguration().PlaceAnywhere)
-        {
+        var config = Plugin.GetConfiguration();
+
+        if (config.PlaceAnywhere)
           SetPlaceAnywhere(Plugin.GetConfiguration().PlaceAnywhere);
-        }
       }
       catch (Exception ex)
       {
         Plugin.Log.Error(ex, "Error while calling PluginMemory.ctor()");
       }
     }
+
+    public unsafe void ShowFurnishingList(bool state)
+    {
+      if (HousingGoods != null)
+        HousingGoods->IsVisible = state;
+    }
+
+    public void ShowInventory(bool state) => InventoryVisible = state;
 
     /// <summary>
     /// Dispose for the memory functions.
@@ -361,6 +341,20 @@ namespace BDTHPlugin
     {
       try
       {
+        var lastIsHousingOpen = isHousingOpen;
+        isHousingOpen = IsHousingOpen();
+
+        // Just perform once when housing is opened
+        if (lastIsHousingOpen != isHousingOpen && isHousingOpen)
+        {
+          Plugin.Log.Info("Housing opened");
+          var config = Plugin.GetConfiguration();
+          if (!config.DisplayFurnishingList)
+            ShowFurnishingList(false);
+          if (!config.DisplayInventory)
+            ShowInventory(false);
+        }
+
         if (CanEditItem())
         {
           // Don't really need to load position if we're reading it in the UI thread anyway, but leaving it for now for redudency...
@@ -420,7 +414,7 @@ namespace BDTHPlugin
     /// <returns></returns>
     public unsafe bool GetFurnishingByDistance(out List<HousingGameObject> objects, Vector3 point)
     {
-      objects = null;
+      objects = [];
 
       if (HousingModule == null || HousingModule->GetCurrentManager() == null || HousingModule->GetCurrentManager()->Objects == null)
         return false;
@@ -453,7 +447,7 @@ namespace BDTHPlugin
     private static void WriteProtectedBytes(IntPtr addr, byte b)
     {
       if (addr == IntPtr.Zero) return;
-      WriteProtectedBytes(addr, new[] { b });
+      WriteProtectedBytes(addr, [b]);
     }
 
     /// <summary>
@@ -474,11 +468,11 @@ namespace BDTHPlugin
       WriteProtectedBytes(wallmountAnywhere, bstate);
 
       // Which bytes to write.
-      var showcaseBytes = state ? new byte[] { 0x90, 0x90, 0x90, 0x90, 0x90, 0x90 } : new byte[] { 0x88, 0x87, 0x73, 0x01, 0x00, 0x00 };
+      // byte[] showcaseBytes = state ? [0x90, 0x90, 0x90, 0x90, 0x90, 0x90] : [0x88, 0x87, 0x98, 0x02, 0x00, 0x00];
 
-      // Write bytes for showcase anywhere (nop or original bytes).
-      WriteProtectedBytes(showcaseAnywhereRotate, showcaseBytes);
-      WriteProtectedBytes(showcaseAnywherePlace, showcaseBytes);
+      // // Write bytes for showcase anywhere (nop or original bytes).
+      // WriteProtectedBytes(showcaseAnywhereRotate, showcaseBytes);
+      // WriteProtectedBytes(showcaseAnywherePlace, showcaseBytes);
     }
 
     #region Kernel32

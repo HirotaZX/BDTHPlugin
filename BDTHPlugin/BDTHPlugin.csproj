@@ -1,12 +1,9 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Dalamud.NET.Sdk/10.0.0">
   <PropertyGroup>
-    <Version>1.6.3</Version>
+    <Version>1.6.6</Version>
     <TargetFramework>net8.0-windows</TargetFramework>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
-    <Platforms>x64</Platforms>
-    <PlatformTarget>x64</PlatformTarget>
-    <OutputType>Library</OutputType>
     <ProduceReferenceAssembly>false</ProduceReferenceAssembly>
     <PreserveCompilationContext>false</PreserveCompilationContext>
     <RestorePackagesWithLockFile>true</RestorePackagesWithLockFile>
@@ -21,35 +18,12 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Reference Include="Dalamud">
-      <HintPath>$(DalamudLibPath)Dalamud.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="FFXIVClientStructs">
-      <HintPath>$(DalamudLibPath)FFXIVClientStructs.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="ImGuiScene">
-      <HintPath>$(DalamudLibPath)ImGuiScene.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(DalamudLibPath)Lumina.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="Lumina">
-      <HintPath>$(DalamudLibPath)Lumina.Excel.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-  </ItemGroup>
-
-  <ItemGroup>
+    <PackageReference Include="Dalamud.NET.Sdk" Version="10.0.0" />
     <PackageReference Include="System.Numerics.Vectors" Version="4.5.0" />
-    <PackageReference Include="DalamudPackager" Version="2.1.12" />
+    <Reference Include="SharpDX">
+      <HintPath>$(DalamudLibPath)SharpDX.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

@@ -1,5 +1,4 @@
-﻿using FFXIVClientStructs.FFXIV.Client.Game.Housing;
-using System.Numerics;
+﻿using System.Numerics;
 using System.Runtime.InteropServices;
 
 namespace BDTHPlugin
@@ -30,7 +29,7 @@ namespace BDTHPlugin
   }
 
   [StructLayout(LayoutKind.Explicit)]
-  public unsafe struct HousingObjectManger
+  public unsafe struct HousingObjectManager
   {
     [FieldOffset(0x8980)] public fixed ulong Objects[400];
     [FieldOffset(0x96E8)] public HousingGameObject* IndoorActiveObject2;
@@ -44,11 +43,11 @@ namespace BDTHPlugin
   [StructLayout(LayoutKind.Explicit)]
   public unsafe struct HousingModule
   {
-    [FieldOffset(0x0)] public HousingObjectManger* CurrentTerritory;
-    [FieldOffset(0x8)] public HousingObjectManger* OutdoorTerritory;
-    [FieldOffset(0x10)] public HousingObjectManger* IndoorTerritory;
+    [FieldOffset(0x0)] public HousingObjectManager* CurrentTerritory;
+    [FieldOffset(0x8)] public HousingObjectManager* OutdoorTerritory;
+    [FieldOffset(0x10)] public HousingObjectManager* IndoorTerritory;
 
-    public HousingObjectManger* GetCurrentManager()
+    public HousingObjectManager* GetCurrentManager()
       => OutdoorTerritory != null ? OutdoorTerritory : IndoorTerritory;
   }
 
@@ -86,30 +85,5 @@ namespace BDTHPlugin
   {
     [FieldOffset(0x50)] public Vector3 Position;
     [FieldOffset(0x60)] public Quaternion Rotation;
-    // [FieldOffset(0x90)] public HousingItemUnknown1* unknown;
-  }
-
-  [StructLayout(LayoutKind.Explicit)]
-  public unsafe struct HousingItemUnknown1
-  {
-    [FieldOffset(0x0)] public HousingItemUnknown2* unknown;
-  }
-
-  [StructLayout(LayoutKind.Explicit)]
-  public unsafe struct HousingItemUnknown2
-  {
-    [FieldOffset(0x10)] public HousingItemUnknown3* unknown;
-  }
-
-  [StructLayout(LayoutKind.Explicit)]
-  public unsafe struct HousingItemUnknown3
-  {
-    [FieldOffset(0x30)] public HousingItemModel* unknown;
-  }
-
-  [StructLayout(LayoutKind.Explicit)]
-  public struct HousingItemModel
-  {
-    [FieldOffset(0x50)] public Vector3 position;
   }
 }

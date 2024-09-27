@@ -117,20 +117,29 @@ namespace BDTHPlugin.Interface.Windows
       var dummyInventory = Memory.InventoryVisible;
 
       if (ImGui.Checkbox("显示家具设置", ref dummyHousingGoods))
-        if (PluginMemory.HousingGoods != null)
-          PluginMemory.HousingGoods->IsVisible = dummyHousingGoods;
+      {
+        Memory.ShowFurnishingList(dummyHousingGoods);
+
+        Configuration.DisplayFurnishingList = dummyHousingGoods;
+        Configuration.Save();
+      }
       ImGui.SameLine();
 
       if (ImGui.Checkbox("显示物品栏", ref dummyInventory))
-        Memory.InventoryVisible = dummyInventory;
+      {
+        Memory.ShowInventory(dummyInventory);
+
+        Configuration.DisplayInventory = dummyInventory;
+        Configuration.Save();
+      }
 
       if (ImGui.Button("打开家具列表"))
         Plugin.CommandManager.ProcessCommand("/bdth list");
-      DrawTooltip(new[]
-      {
+      DrawTooltip(
+      [
         "打开一个可以距离排序并选择家具的列表",
         "注意: 暂不支持庭具!"
-      });
+      ]);
 
       var autoVisible = Configuration.AutoVisible;
       if (ImGui.Checkbox("自动打开", ref autoVisible))
@@ -153,7 +162,7 @@ namespace BDTHPlugin.Interface.Windows
 
     private static void DrawTooltip(string text)
     {
-      DrawTooltip(new[] { text });
+      DrawTooltip([text]);
     }
 
     private void DrawError(string text)
